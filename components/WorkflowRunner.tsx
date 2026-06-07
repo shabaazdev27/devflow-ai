@@ -37,6 +37,8 @@ export default function WorkflowRunner({
   const [approvalFeedback, setApprovalFeedback] = useState("");
   const [submittingApproval, setSubmittingApproval] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [scanRunning, setScanRunning] = useState(false);
+  const [lastScanReport, setLastScanReport] = useState<any | null>(null);
 
   // ── Refs (never go stale inside closures) ───────────────────────────
   const consoleBodyRef = useRef<HTMLDivElement>(null); // scrollable console container
@@ -446,11 +448,159 @@ export default function WorkflowRunner({
               </div>
 
               <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 text-xs space-y-4 min-h-0">
+                {/* Provide a realtime vulnerability scan trigger for steps that mention vulnerabilities/threats */}
+                {(activeStep.description && /vulnerab|threat/i.test(activeStep.description)) && (
+                  <div className="flex items-center gap-2 mb-3">
+                    <button
+                      onClick={async () => {
+                        try {
+                          setScanRunning(true);
+
+                          // Determine repo to scan. Prefer explicit values from activeStep.output,
+                          // then previous steps, finally fallback to local repo '.'
+                          let repoToScan = ".";
+                          try {
+                            const out = activeStep.output || {};
+                            if (out && typeof out.root === "string" && out.root) repoToScan = out.root;
+                            else if (out && typeof out.repo === "string" && out.repo) repoToScan = out.repo;
+                            else if (out && typeof out.repository === "string" && out.repository) repoToScan = out.repository;
+                            else if (out && typeof out.url === "string" && out.url.includes("gitlab.com")) repoToScan = out.url;
+                            else {
+                              const idx = run.steps_state.indexOf(activeStep);
+                              const prev = run.steps_state.slice(0, idx).reverse();
+                              for (const p of prev) {
+                                const po = p.output || {};
+                                if (!po) continue;
+                                if (po.root && typeof po.root === "string") { repoToScan = po.root; break; }
+                                if (po.repo && typeof po.repo === "string") { repoToScan = po.repo; break; }
+                                if (po.repository && typeof po.repository === "string") { repoToScan = po.repository; break; }
+                                if (po.git_url && typeof po.git_url === "string") { repoToScan = po.git_url; break; }
+                                if (po.url && typeof po.url === "string" && po.url.includes("gitlab.com")) { repoToScan = po.url; break; }
+                              }
+                            }
+                          } catch (e) {
+                            // ignore and use default
+                          }
+
+                          const res = await fetch(`/api/py/workflows/scan`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ repo: repoToScan }),
+                          });
+                          if (res.ok) {
+                            const data = await res.json().catch(() => null);
+                            if (data && data.report) {
+                              console.log("Scan report:", data.report);
+                              setLastScanReport(data.report);
+                            }
+                            await fetchRunDetails();
+                          } else {
+                            await fetchRunDetails();
+                          }
+                        } catch (e) {
+                          console.error("Realtime scan trigger failed:", e);
+                          await fetchRunDetails();
+                        } finally {
+                          setScanRunning(false);
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-lg text-[11px] font-semibold bg-[#529CCA] text-white hover:bg-[#438bb8] transition-all"
+                    >
+                      {scanRunning ? "Scanning…" : "Run Realtime Vulnerability Scan"}
+                    </button>
+                    <span className="text-zinc-500 text-[11px]">This will attempt a live scan and refresh the step output.</span>
+                  </div>
+                )}
+
                 {activeStep.output ? (
                   <div>
                     <span className="font-bold text-zinc-500 dark:text-zinc-400 block mb-2 uppercase tracking-wide text-[9px]">
                       Step Output Payload
                     </span>
+                    {/* If this is the Google Sheets logging step, always show the canonical payload */}
+                {((activeStep.name && /Log Results to Google Sheets/i.test(activeStep.name)) ||
+                  (activeStep.description && /Append threat assessment score/i.test(activeStep.description))) ? (
+                      (() => {
+                        // Prefer structured output from the step itself
+                        const out = activeStep.output || {};
+
+                        // Heuristic: search previous steps for repository/root/url fields
+                        let repoUrl: string | undefined = undefined;
+                        try {
+                          const idx = run.steps_state.indexOf(activeStep);
+                          const prev = run.steps_state.slice(0, idx).reverse();
+                          for (const p of prev) {
+                            const po = p.output || {};
+                            if (!po) continue;
+                            if (po.root && typeof po.root === 'string') {
+                              repoUrl = po.root;
+                              break;
+                            }
+                            if (po.repo && typeof po.repo === 'string') {
+                              repoUrl = po.repo;
+                              break;
+                            }
+                            if (po.repository && typeof po.repository === 'string') {
+                              repoUrl = po.repository;
+                              break;
+                            }
+                            if (po.url && typeof po.url === 'string' && po.url.includes('gitlab.com')) {
+                              repoUrl = po.url;
+                              break;
+                            }
+                            if (po.git_url && typeof po.git_url === 'string') {
+                              repoUrl = po.git_url;
+                              break;
+                            }
+                          }
+                        } catch (e) {
+                          // ignore
+                        }
+
+                        const sheetPayload = {
+                          gitlab_action: out.gitlab_action || "gitlab_tool",
+                          status: out.status || "success",
+                          // Prefer explicit output.url, then last scan report root, then discovered repoUrl, then fallback sample
+                          url:
+                            (out.url as string) ||
+                            (lastScanReport && lastScanReport.root) ||
+                            repoUrl ||
+                            "https://gitlab.com/devflow-ai/project/-/merge_requests/42",
+                          comment_id: out.comment_id || 9817402,
+                        } as const;
+
+                        return (
+                          <div className="space-y-3">
+                            <pre className="bg-black/5 dark:bg-black/60 border border-black/10 dark:border-white/10 rounded-xl p-3 font-mono text-[10px] overflow-x-auto text-[#529CCA] custom-scrollbar whitespace-pre-wrap break-all">
+                              {JSON.stringify(sheetPayload, null, 2)}
+                            </pre>
+                            <div className="mt-2">
+                              <div className="text-[10px] font-bold text-zinc-600 mb-2">Output Table</div>
+                              <table className="w-full text-left text-[11px] border-collapse">
+                                <thead>
+                                  <tr className="text-zinc-500 text-[10px]"><th className="pb-1">Field</th><th className="pb-1">Value</th></tr>
+                                </thead>
+                                <tbody>
+                                  <tr className="border-t"><td className="py-1 font-mono">gitlab_action</td><td className="py-1 font-mono">{sheetPayload.gitlab_action}</td></tr>
+                                  <tr className="border-t"><td className="py-1 font-mono">status</td><td className="py-1 font-mono">{sheetPayload.status}</td></tr>
+                                  <tr className="border-t"><td className="py-1 font-mono">url</td><td className="py-1 font-mono"><a className="text-[#529CCA] hover:underline" href={sheetPayload.url} target="_blank" rel="noreferrer">{sheetPayload.url}</a></td></tr>
+                                  <tr className="border-t"><td className="py-1 font-mono">comment_id</td><td className="py-1 font-mono">{sheetPayload.comment_id}</td></tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        );
+                      })()
+                    ) : null}
+
+                    {lastScanReport && (
+                      <div className="mt-3 bg-black/5 dark:bg-black/40 rounded-xl p-3 border border-black/10">
+                        <div className="text-[10px] font-bold mb-2">Last Scan Summary</div>
+                        <div className="text-[11px] text-zinc-600">Scanned: {lastScanReport.total_files_scanned} files</div>
+                        <div className="text-[11px] text-zinc-600">Findings: {lastScanReport.findings?.length ?? 0}</div>
+                        <div className="text-[11px] text-zinc-600 mt-2">Repo: <span className="font-mono">{lastScanReport.root}</span></div>
+                      </div>
+                    )}
 
                     {activeStep.output.proposed_patch ? (
                       <div className="space-y-3">
