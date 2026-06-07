@@ -1,0 +1,9 @@
+[
+  {
+    "timestamp": "2026-06-07T16:55:26.270811",
+    "workflow": "GitLab Audit",
+    "vulnerabilities": 1,
+    "score": 82,
+    "status": "Approved"
+  }
+]

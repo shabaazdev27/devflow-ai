@@ -94,7 +94,11 @@ class WorkflowEngine:
                     step["ended_at"] = datetime.datetime.utcnow().isoformat()
 
                 elif step["type"] == "mcp_tool":
-                    await self.run_mcp_tool_step(step, steps_state[:i], gitlab_token, sheets_id)
+                    # Pass the run object and the full steps_state so the tool
+                    # helper can persist incremental logs/output to the DB while
+                    # the tool executes. This allows the frontend poller to see
+                    # intermediate logs and results immediately.
+                    await self.run_mcp_tool_step(run, step, steps_state, gitlab_token, sheets_id)
                     step["status"] = "COMPLETED"
                     step["ended_at"] = datetime.datetime.utcnow().isoformat()
 
@@ -141,9 +145,9 @@ class WorkflowEngine:
         prompt += "Based on this, perform the task and return a JSON output."
 
         if api_key:
-            step["logs"].append(f"Contacting Google Gemini API (gemini-1.5-flash)...")
+            step["logs"].append(f"Contacting Google Gemini API (gemini-2.5-flash)...")
             try:
-                model = genai.GenerativeModel("gemini-1.5-flash")
+                model = genai.GenerativeModel("gemini-2.5-flash")
                 response = model.generate_content(prompt)
                 text_response = response.text
                 step["logs"].append(f"Received Gemini response successfully.")
@@ -241,9 +245,21 @@ class WorkflowEngine:
             
         step["logs"].append("Step completed successfully.")
 
-    async def run_mcp_tool_step(self, step: Dict[str, Any], previous_steps: List[Dict[str, Any]], token: str, sheets_id: str):
+    async def run_mcp_tool_step(self, run: WorkflowRun, step: Dict[str, Any], steps_state: List[Dict[str, Any]], token: str, sheets_id: str):
+        """
+        Execute an MCP tool and persist incremental logs/output back to the DB
+        so the frontend can poll and display logs in near real-time.
+        """
         tool_name = step.get("config", {}).get("tool_name", "gitlab_tool")
         step["logs"].append(f"Invoking MCP Tool '{tool_name}'...")
+        # Persist immediately so the UI sees the invocation line
+        try:
+            run.steps_state = json.dumps(steps_state)
+            self.db.commit()
+        except Exception:
+            # don't fail the tool run if commit fails
+            pass
+
         await asyncio.sleep(1.0)
 
         # Check which tool is being called
@@ -281,7 +297,14 @@ class WorkflowEngine:
                 "status": "Approved"
             }
             # Find previous agent step output to get real values if available
-            for prev in reversed(previous_steps):
+            # Determine preceding steps relative to this step instance so we
+            # do not consider the current step when harvesting metrics.
+            try:
+                idx = steps_state.index(step)
+            except ValueError:
+                idx = None
+            prev_iterable = reversed(steps_state[:idx]) if idx is not None else reversed(steps_state)
+            for prev in prev_iterable:
                 if prev["type"] == "agent" and prev.get("output"):
                     out = prev["output"]
                     if "score" in out:
@@ -292,16 +315,60 @@ class WorkflowEngine:
 
             if sheets_id:
                 step["logs"].append(f"Logging data to Google Sheet (ID: {sheets_id})...")
+                # Persist so UI shows the sheets logging attempt
+                try:
+                    run.steps_state = json.dumps(steps_state)
+                    self.db.commit()
+                except Exception:
+                    pass
                 await asyncio.sleep(1.2)
-                # Here you would typically use gspread or a Google Service account
-                # For this demo we also write to mock sheet for instant UI visualization
-                write_to_mock_sheet(metrics)
-                step["logs"].append("Google Sheets API write succeeded.")
-                step["output"] = {
-                    "sheets_logged": True,
-                    "sheet_id": sheets_id,
-                    "logged_row": metrics
-                }
+
+                # Attempt to load decrypted service account credentials (env or encrypted store)
+                sa = None
+                try:
+                    from ..routes.workflows import load_decrypted_service_account
+                    sa = load_decrypted_service_account()
+                except Exception:
+                    sa = None
+
+                if sa:
+                    try:
+                        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+                        creds = Credentials.from_service_account_info(sa, scopes=scopes)
+                        import gspread
+                        gc = gspread.authorize(creds)
+                        sh = gc.open_by_key(sheets_id)
+                        ws = sh.get_worksheet(0)
+                        values = [metrics.get("workflow"), metrics.get("vulnerabilities"), metrics.get("score"), metrics.get("status")]
+                        ws.append_row(values)
+                        step["logs"].append("Google Sheets API write succeeded.")
+                        step["output"] = {"sheets_logged": True, "sheet_id": sheets_id, "logged_row": metrics}
+                        try:
+                            run.steps_state = json.dumps(steps_state)
+                            self.db.commit()
+                        except Exception:
+                            pass
+                    except Exception as ex:
+                        step["logs"].append(f"Google Sheets API append failed: {str(ex)}")
+                        # Fallback to mock file
+                        write_to_mock_sheet(metrics)
+                        step["logs"].append("Wrote to mock sheet as fallback.")
+                        step["output"] = {"sheets_logged": True, "sandbox": True, "logged_row": metrics}
+                        try:
+                            run.steps_state = json.dumps(steps_state)
+                            self.db.commit()
+                        except Exception:
+                            pass
+                else:
+                    # No service account configured — write to mock
+                    write_to_mock_sheet(metrics)
+                    step["logs"].append("No service account configured. Wrote to mock sheet.")
+                    step["output"] = {"sheets_logged": True, "sandbox": True, "logged_row": metrics}
+                    try:
+                        run.steps_state = json.dumps(steps_state)
+                        self.db.commit()
+                    except Exception:
+                        pass
             else:
                 step["logs"].append("No Google Sheets ID configured. Writing to local Mock Google Sheets Store...")
                 await asyncio.sleep(1.5)
@@ -312,11 +379,35 @@ class WorkflowEngine:
                     "sandbox": True,
                     "logged_row": metrics
                 }
+                try:
+                    run.steps_state = json.dumps(steps_state)
+                    self.db.commit()
+                except Exception:
+                    pass
         else:
             step["logs"].append(f"Tool {tool_name} successfully invoked.")
             step["output"] = {"status": "success"}
 
+        # If the tool produced a structured output, log a compact JSON summary so
+        # the frontend console (which only displays step logs) shows the result
+        # immediately after the tool completes. This keeps the change minimal and
+        # avoids altering UI selection behaviour.
+        try:
+            if step.get("output") is not None:
+                # Use separators to keep the log compact
+                step_out = json.dumps(step.get("output"), separators=(",", ":"), ensure_ascii=False)
+                step["logs"].append(f"Tool result: {step_out}")
+        except Exception:
+            # Never let logging of the output raise and break execution
+            step["logs"].append("Tool result: <unserializable output>")
+
         step["logs"].append("Tool execution finished.")
+        # Persist final logs/output for this tool step
+        try:
+            run.steps_state = json.dumps(steps_state)
+            self.db.commit()
+        except Exception:
+            pass
 
     async def resume_run_with_approval(self, run_id: str, approved: bool, feedback: str = None) -> WorkflowRun:
         run = self.db.query(WorkflowRun).filter(WorkflowRun.id == run_id).first()

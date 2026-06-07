@@ -105,6 +105,56 @@ export default function GoogleSheetsPreview({ refreshTrigger }: GoogleSheetsPrev
           >
             <Trash2 className="h-4 w-4" />
           </button>
+          <button
+            onClick={() => {
+              // Dynamic CSV exporter — include all keys seen across rows
+              if (!rows || rows.length === 0) return;
+              const keySet = new Set<string>();
+              rows.forEach((r: any) => Object.keys(r || {}).forEach(k => keySet.add(k)));
+              const cols = Array.from(keySet);
+              const csv = [cols.join(",")].concat(rows.map((r: any) => {
+                const vals = cols.map(c => {
+                  const v = r[c] ?? "";
+                  const s = String(v).replace(/"/g, '""');
+                  return `"${s}"`;
+                });
+                return vals.join(",");
+              })).join("\n");
+              const blob = new Blob([csv], { type: 'text/csv' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `mock_sheets_${new Date().toISOString().replace(/[:.]/g,'-')}.csv`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+            }}
+            className="px-3 py-2 rounded-xl bg-[#10b981]/10 border border-emerald-300 text-emerald-600 hover:bg-emerald-50 text-sm"
+            title="Download CSV"
+          >
+            Download CSV
+          </button>
+          <button
+            onClick={() => {
+              if (!rows) return;
+              const json = JSON.stringify(rows, null, 2);
+              const blob = new Blob([json], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `mock_sheets_${new Date().toISOString().replace(/[:.]/g,'-')}.json`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+            }}
+            className="px-3 py-2 rounded-xl bg-[#2563eb]/10 border border-blue-300 text-blue-600 hover:bg-blue-50 text-sm"
+            title="Download JSON"
+          >
+            Download JSON
+          </button>
+          <a href="/api/py/workflows/scan/reports/download" className="px-3 py-2 rounded-xl bg-[#7c3aed]/10 border border-purple-300 text-purple-600 hover:bg-purple-50 text-sm">Download All Reports</a>
         </div>
       </div>
 

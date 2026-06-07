@@ -1,0 +1,145 @@
+{
+  "root": "https://gitlab.com/khanshabaaz0227/devflow-ai.git",
+  "total_files_scanned": 35,
+  "findings": [
+    {
+      "file": "app\\page.tsx",
+      "line": 64,
+      "match_type": "secrets_tokens",
+      "snippet": "if (setting.key === \"gemini_api_key\") setGeminiKey(setting.value || \"\");"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 65,
+      "match_type": "secrets_tokens",
+      "snippet": "if (setting.key === \"gitlab_access_token\") setGitlabToken(setting.value || \"\");"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 392,
+      "match_type": "secrets_tokens",
+      "snippet": "type=\"password\""
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 396,
+      "match_type": "secrets_tokens",
+      "snippet": "handleSaveSetting(\"gemini_api_key\", e.target.value);"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 403,
+      "match_type": "secrets_tokens",
+      "snippet": "{/* GitLab Access Token */}"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 408,
+      "match_type": "secrets_tokens",
+      "snippet": "GitLab Personal Access Token"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 413,
+      "match_type": "secrets_tokens",
+      "snippet": "type=\"password\""
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 417,
+      "match_type": "secrets_tokens",
+      "snippet": "handleSaveSetting(\"gitlab_access_token\", e.target.value);"
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 63,
+      "match_type": "secrets_tokens",
+      "snippet": "gemini_key = self.get_setting(\"gemini_api_key\")"
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 64,
+      "match_type": "secrets_tokens",
+      "snippet": "gitlab_token = self.get_setting(\"gitlab_access_token\")"
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 211,
+      "match_type": "raw_sql_fstring",
+      "snippet": "-    query = f\"SELECT * FROM users WHERE username = '{username}'\""
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 244,
+      "match_type": "secrets_tokens",
+      "snippet": "async def run_mcp_tool_step(self, step: Dict[str, Any], previous_steps: List[Dict[str, Any]], token: str, sheets_id: str):"
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 251,
+      "match_type": "secrets_tokens",
+      "snippet": "if token:"
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 262,
+      "match_type": "secrets_tokens",
+      "snippet": "step[\"logs\"].append(\"GitLab token not provided. Emulating GitLab MCP action...\")"
+    },
+    {
+      "file": "backend\\test_main.py",
+      "line": 63,
+      "match_type": "secrets_tokens",
+      "snippet": "response = client.post(\"/api/workflows/settings/set\", json={\"key\": \"gemini_api_key\", \"value\": \"test-key\"})"
+    },
+    {
+      "file": "backend\\test_main.py",
+      "line": 72,
+      "match_type": "secrets_tokens",
+      "snippet": "assert data[0][\"key\"] == \"gemini_api_key\""
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 89,
+      "match_type": "secrets_tokens",
+      "snippet": "gitlab_token = db.query(Setting).filter(Setting.key == \"gitlab_access_token\").first()"
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 147,
+      "match_type": "secrets_tokens",
+      "snippet": "gitlab_token = db.query(Setting).filter(Setting.key == \"gitlab_access_token\").first()"
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 153,
+      "match_type": "secrets_tokens",
+      "snippet": "# we return a simulated success representing the live token's activity."
+    },
+    {
+      "file": "docs\\DETAILED_ARCHITECTURE_AND_USAGE.md",
+      "line": 105,
+      "match_type": "secrets_tokens",
+      "snippet": "- Store real API keys in a secure secret store or environment variables\u2014do not commit them to source control."
+    },
+    {
+      "file": "scratch\\find_css_rules.js",
+      "line": 5,
+      "match_type": "smb_unc",
+      "snippet": "const rootDir = \"c:\\\\Users\\\\Engineer\\\\Documents\\\\devflow-ai\";"
+    },
+    {
+      "file": "scratch\\find_zinc_900.js",
+      "line": 4,
+      "match_type": "smb_unc",
+      "snippet": "const rootDir = \"c:\\\\Users\\\\Engineer\\\\Documents\\\\devflow-ai\";"
+    },
+    {
+      "file": "scratch\\find_zinc_900_val.js",
+      "line": 4,
+      "match_type": "smb_unc",
+      "snippet": "const rootDir = \"c:\\\\Users\\\\Engineer\\\\Documents\\\\devflow-ai\";"
+    }
+  ],
+  "scanned_at": "2026-06-07T17:16:19.826923Z"
+}

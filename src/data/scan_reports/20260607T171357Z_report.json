@@ -1,0 +1,361 @@
+{
+  "root": ".",
+  "total_files_scanned": 46,
+  "findings": [
+    {
+      "file": "README_SCAN.md",
+      "line": 23,
+      "match_type": "secrets_tokens",
+      "snippet": "- occurrences of token/secret/password/private_key"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 71,
+      "match_type": "secrets_tokens",
+      "snippet": "if (setting.key === \"gemini_api_key\") setGeminiKey(setting.value || \"\");"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 72,
+      "match_type": "secrets_tokens",
+      "snippet": "if (setting.key === \"gitlab_access_token\") setGitlabToken(setting.value || \"\");"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 109,
+      "match_type": "secrets_tokens",
+      "snippet": "handleSaveSetting(\"gemini_api_key\", geminiKey),"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 110,
+      "match_type": "secrets_tokens",
+      "snippet": "handleSaveSetting(\"gitlab_access_token\", gitlabToken),"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 126,
+      "match_type": "secrets_tokens",
+      "snippet": "// GitLab: validate token directly using the validation endpoint"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 485,
+      "match_type": "secrets_tokens",
+      "snippet": "type={showGemini ? \"text\" : \"password\"}"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 502,
+      "match_type": "secrets_tokens",
+      "snippet": "{/* GitLab Access Token */}"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 507,
+      "match_type": "secrets_tokens",
+      "snippet": "GitLab Personal Access Token"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 513,
+      "match_type": "secrets_tokens",
+      "snippet": "type={showGitlab ? \"text\" : \"password\"}"
+    },
+    {
+      "file": "app\\page.tsx",
+      "line": 523,
+      "match_type": "secrets_tokens",
+      "snippet": "aria-label=\"Toggle GitLab token visibility\""
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 63,
+      "match_type": "secrets_tokens",
+      "snippet": "gemini_key = self.get_setting(\"gemini_api_key\")"
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 64,
+      "match_type": "secrets_tokens",
+      "snippet": "gitlab_token = self.get_setting(\"gitlab_access_token\")"
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 215,
+      "match_type": "raw_sql_fstring",
+      "snippet": "-    query = f\"SELECT * FROM users WHERE username = '{username}'\""
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 248,
+      "match_type": "secrets_tokens",
+      "snippet": "async def run_mcp_tool_step(self, run: WorkflowRun, step: Dict[str, Any], steps_state: List[Dict[str, Any]], token: str, sheets_id: str):"
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 267,
+      "match_type": "secrets_tokens",
+      "snippet": "if token:"
+    },
+    {
+      "file": "backend\\engine.py",
+      "line": 278,
+      "match_type": "secrets_tokens",
+      "snippet": "step[\"logs\"].append(\"GitLab token not provided. Emulating GitLab MCP action...\")"
+    },
+    {
+      "file": "backend\\test_main.py",
+      "line": 63,
+      "match_type": "secrets_tokens",
+      "snippet": "response = client.post(\"/api/workflows/settings/set\", json={\"key\": \"gemini_api_key\", \"value\": \"test-key\"})"
+    },
+    {
+      "file": "backend\\test_main.py",
+      "line": 72,
+      "match_type": "secrets_tokens",
+      "snippet": "assert data[0][\"key\"] == \"gemini_api_key\""
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 102,
+      "match_type": "secrets_tokens",
+      "snippet": "gitlab_token = db.query(Setting).filter(Setting.key == \"gitlab_access_token\").first()"
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 128,
+      "match_type": "secrets_tokens",
+      "snippet": "the saved token by calling /user on GitLab. Returns detailed result."
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 130,
+      "match_type": "secrets_tokens",
+      "snippet": "gitlab_token = db.query(Setting).filter(Setting.key == \"gitlab_access_token\").first()"
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 133,
+      "match_type": "secrets_tokens",
+      "snippet": "return {\"success\": False, \"message\": \"No GitLab token configured\"}"
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 138,
+      "match_type": "secrets_tokens",
+      "snippet": "return {\"success\": True, \"message\": \"Token valid\", \"user\": r.json()}"
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 139,
+      "match_type": "secrets_tokens",
+      "snippet": "return {\"success\": False, \"message\": \"Token validation failed\", \"status_code\": r.status_code, \"details\": r.text}"
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 152,
+      "match_type": "secrets_tokens",
+      "snippet": "saved token and returns the exact outbound URL, masked headers and raw response."
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 155,
+      "match_type": "secrets_tokens",
+      "snippet": "gitlab_token = db.query(Setting).filter(Setting.key == \"gitlab_access_token\").first()"
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 157,
+      "match_type": "secrets_tokens",
+      "snippet": "return {\"success\": False, \"message\": \"No GitLab token configured\"}"
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 209,
+      "match_type": "secrets_tokens",
+      "snippet": "gitlab_token = db.query(Setting).filter(Setting.key == \"gitlab_access_token\").first()"
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 238,
+      "match_type": "secrets_tokens",
+      "snippet": "# When token exists, perform real GitLab API calls per tool_name"
+    },
+    {
+      "file": "backend\\routes\\mcp.py",
+      "line": 244,
+      "match_type": "secrets_tokens",
+      "snippet": "return {\"success\": False, \"message\": \"Invalid GitLab token\", \"details\": user_resp.text, \"status_code\": user_resp.status_code}"
+    },
+    {
+      "file": "backend\\routes\\workflows.py",
+      "line": 189,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'raw_sql_fstring': re.compile(r\"f[\\\"'].*SELECT.*\\{[^}]+\\}.*[\\\"']\", re.IGNORECASE),"
+    },
+    {
+      "file": "backend\\routes\\workflows.py",
+      "line": 190,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'cursor_execute': re.compile(r\"cursor\\.execute\\(|\\.execute\\(\", re.IGNORECASE),"
+    },
+    {
+      "file": "backend\\routes\\workflows.py",
+      "line": 191,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'os_system_subprocess': re.compile(r\"\\bos\\.system\\(|subprocess\\.|Popen\\(|call\\(|check_output\\(\", re.IGNORECASE),"
+    },
+    {
+      "file": "backend\\routes\\workflows.py",
+      "line": 192,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'eval_exec_pickle': re.compile(r\"\\beval\\(|\\bexec\\(|pickle\\.load\\(|yaml\\.load\\(|marshal\\.loads\\(|compile\\(\", re.IGNORECASE),"
+    },
+    {
+      "file": "backend\\routes\\workflows.py",
+      "line": 193,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'secrets_tokens': re.compile(r\"\\b(token|secret|password|private_key|ACCESS_TOKEN|SECRET_KEY|gitlab_access_token|gemini_api_key)\\b\", re.IGNORECASE),"
+    },
+    {
+      "file": "backend\\routes\\workflows.py",
+      "line": 194,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'cve_mentions': re.compile(r\"CVE-\\d{4}-\\d{4,}\", re.IGNORECASE),"
+    },
+    {
+      "file": "backend\\routes\\workflows.py",
+      "line": 195,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'smb_unc': re.compile(r\"\\\\\\\\[A-Za-z0-9_.-]+\\\\\\\\[A-Za-z0-9_.-]+\"),"
+    },
+    {
+      "file": "backend\\routes\\workflows.py",
+      "line": 216,
+      "match_type": "os_system_subprocess",
+      "snippet": "subprocess.check_call(['git', 'clone', '--depth', '1', repo, temp_dir])"
+    },
+    {
+      "file": "backend\\routes\\workflows.py",
+      "line": 324,
+      "match_type": "secrets_tokens",
+      "snippet": "# Trim whitespace for token-like values"
+    },
+    {
+      "file": "backend\\routes\\workflows.py",
+      "line": 325,
+      "match_type": "secrets_tokens",
+      "snippet": "if setting.key in (\"gitlab_access_token\", \"gemini_api_key\") and setting.value:"
+    },
+    {
+      "file": "backend\\routes\\workflows.py",
+      "line": 346,
+      "match_type": "secrets_tokens",
+      "snippet": "gemini = db.query(Setting).filter(Setting.key == \"gemini_api_key\").first()"
+    },
+    {
+      "file": "backend\\utils\\crypto.py",
+      "line": 33,
+      "match_type": "secrets_tokens",
+      "snippet": "token = fernet.encrypt(json_bytes)"
+    },
+    {
+      "file": "backend\\utils\\crypto.py",
+      "line": 35,
+      "match_type": "secrets_tokens",
+      "snippet": "f.write(token)"
+    },
+    {
+      "file": "backend\\utils\\crypto.py",
+      "line": 47,
+      "match_type": "secrets_tokens",
+      "snippet": "token = f.read()"
+    },
+    {
+      "file": "backend\\utils\\crypto.py",
+      "line": 48,
+      "match_type": "secrets_tokens",
+      "snippet": "data = fernet.decrypt(token)"
+    },
+    {
+      "file": "docs\\DETAILED_ARCHITECTURE_AND_USAGE.md",
+      "line": 105,
+      "match_type": "secrets_tokens",
+      "snippet": "- Store real API keys in a secure secret store or environment variables\u2014do not commit them to source control."
+    },
+    {
+      "file": "scratch\\find_css_rules.js",
+      "line": 5,
+      "match_type": "smb_unc",
+      "snippet": "const rootDir = \"c:\\\\Users\\\\Engineer\\\\Documents\\\\devflow-ai\";"
+    },
+    {
+      "file": "scratch\\find_zinc_900.js",
+      "line": 4,
+      "match_type": "smb_unc",
+      "snippet": "const rootDir = \"c:\\\\Users\\\\Engineer\\\\Documents\\\\devflow-ai\";"
+    },
+    {
+      "file": "scratch\\find_zinc_900_val.js",
+      "line": 4,
+      "match_type": "smb_unc",
+      "snippet": "const rootDir = \"c:\\\\Users\\\\Engineer\\\\Documents\\\\devflow-ai\";"
+    },
+    {
+      "file": "scripts\\scan_repo.py",
+      "line": 26,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'raw_sql_fstring': re.compile(r\"f[\"'].*SELECT.*\\{[^}]+\\}.*[\"']\", re.IGNORECASE),"
+    },
+    {
+      "file": "scripts\\scan_repo.py",
+      "line": 27,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'select_star_or_raw': re.compile(r\"SELECT\\s+\\*|SELECT\\s+.+FROM\\s+\", re.IGNORECASE),"
+    },
+    {
+      "file": "scripts\\scan_repo.py",
+      "line": 28,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'cursor_execute': re.compile(r\"cursor\\.execute\\(|execute\\(|\\.execute\\(\", re.IGNORECASE),"
+    },
+    {
+      "file": "scripts\\scan_repo.py",
+      "line": 29,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'os_system_subprocess': re.compile(r\"\\bos\\.system\\(|subprocess\\.|Popen\\(|call\\(|check_output\\(\", re.IGNORECASE),"
+    },
+    {
+      "file": "scripts\\scan_repo.py",
+      "line": 30,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'eval_exec_pickle': re.compile(r\"\\beval\\(|\\bexec\\(|pickle\\.load\\(|yaml\\.load\\(|marshal\\.loads\\(|compile\\(\", re.IGNORECASE),"
+    },
+    {
+      "file": "scripts\\scan_repo.py",
+      "line": 31,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'secrets_tokens': re.compile(r\"\\b(token|secret|password|private_key|ACCESS_TOKEN|SECRET_KEY|gitlab_access_token|gemini_api_key)\\b\", re.IGNORECASE),"
+    },
+    {
+      "file": "scripts\\scan_repo.py",
+      "line": 32,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'cve_mentions': re.compile(r\"CVE-\\d{4}-\\d{4,}\", re.IGNORECASE),"
+    },
+    {
+      "file": "scripts\\scan_repo.py",
+      "line": 33,
+      "match_type": "eval_exec_pickle",
+      "snippet": "'smb_unc': re.compile(r\"\\\\\\\\[A-Za-z0-9_.-]+\\\\[A-Za-z0-9_.-]+\"),"
+    },
+    {
+      "file": "scripts\\scan_repo.py",
+      "line": 50,
+      "match_type": "os_system_subprocess",
+      "snippet": "subprocess.check_call(['git', 'clone', '--depth', '1', url, dest])"
+    }
+  ],
+  "scanned_at": "2026-06-07T17:13:57.976301Z"
+}
