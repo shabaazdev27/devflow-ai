@@ -1,0 +1,28 @@
+++{
+  "id": "example-audit",
+  "name": "MR Code Audit",
+  "description": "A simple example workflow that analyzes a merge request diff and requires approval before commenting.",
+  "trigger_type": "manual",
+  "trigger_config": {},
+  "steps": [
+    {
+      "name": "fetch_diff",
+      "type": "mcp_tool",
+      "description": "Fetch MR diff from GitLab",
+      "config": { "tool": "get_diff", "project": "my/repo", "mr": 42 }
+    },
+    {
+      "name": "analyze",
+      "type": "agent",
+      "agent_role": "Vulnerability Scanner",
+      "description": "Analyze the provided diff for security issues",
+      "config": { "prompt": "Identify potential security vulnerabilities in the diff and provide severity." }
+    },
+    {
+      "name": "confirm_and_comment",
+      "type": "manual_approval",
+      "description": "Require human approval before posting comments to the MR",
+      "config": { "message_template": "Findings: {{output.findings}}" }
+    }
+  ]
+}

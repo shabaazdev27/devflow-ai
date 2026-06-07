@@ -1,26 +1,272 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Custom breakpoints ─────────────────────────────────────────── */
+@theme {
+  --breakpoint-xs: 30rem; /* 480 px — sits between default sm (40rem/640px) */
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f4f5; /* Light gray-zinc background for body depth */
+  --foreground: #1e293b; /* Dark slate-blue gray for premium main text legibility */
+  --glass-bg: #ffffff; /* Solid white background for cards (high contrast) */
+  --glass-border: rgba(15, 23, 42, 0.12); /* clean border for cards */
+  --glass-shadow: rgba(15, 23, 42, 0.05); /* soft shadow */
+  --grid-color: rgba(82, 156, 202, 0.07);
+  --neon-cyan: #1a56db; /* Deep accessible blue */
+  --neon-purple: #1e40af; /* Deep electric blue */
+  --neon-magenta: #1d4ed8;
+  
+  --panel-light-bg: #f8fafc; /* slightly off-white for nested flow steps */
+  --panel-light-border: rgba(15, 23, 42, 0.08);
+  
+  --card-hover-border: rgba(26, 86, 219, 0.5);
+  --card-hover-shadow: rgba(26, 86, 219, 0.08);
+  --line-inactive: rgba(15, 23, 42, 0.15);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #0f0f11;
+  --foreground: #f3f4f6;
+  --glass-bg: rgba(22, 22, 29, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: rgba(0, 0, 0, 0.4);
+  --grid-color: rgba(82, 156, 202, 0.05);
+  --neon-cyan: #529CCA; /* Notion Blue Accent */
+  --neon-purple: #3b82f6; /* Electric Blue Accent */
+  --neon-magenta: #93c5fd; /* Soft Blue-White Accent */
+  
+  --panel-light-bg: rgba(255, 255, 255, 0.03);
+  --panel-light-border: rgba(255, 255, 255, 0.05);
+  
+  --card-hover-border: rgba(82, 156, 202, 0.4);
+  --card-hover-shadow: rgba(82, 156, 202, 0.15);
+  --line-inactive: rgba(255, 255, 255, 0.15);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* Notion Custom Callout Box Styling */
+.notion-callout {
+  display: flex;
+  padding: 16px 16px 16px 20px;
+  border-radius: 4px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  transition: all 0.2s ease;
+}
+
+.notion-callout:hover {
+  border-color: var(--card-hover-border);
+  box-shadow: 0 4px 20px var(--glass-shadow);
+}
+
+/* Custom Grid Background */
+.cyber-grid {
+  background-image: 
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center;
+}
+
+/* Glassmorphism */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 var(--glass-shadow);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-panel-light {
+  background: var(--panel-light-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--panel-light-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* 3D Perspective & Tilt */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.tilt-card {
+  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s ease, border-color 0.3s ease, background-color 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.tilt-card:hover {
+  transform: translateY(-4px) rotateX(2deg) rotateY(-2deg);
+  box-shadow: 0 15px 35px var(--card-hover-shadow), 0 5px 15px rgba(82, 156, 202, 0.05);
+  border-color: var(--card-hover-border);
+}
+
+/* Neon Flow Colors */
+.text-neon-cyan {
+  color: var(--neon-cyan);
+}
+
+@keyframes flow {
+  from { stroke-dashoffset: 20; }
+  to { stroke-dashoffset: 0; }
+}
+
+.neon-flow-line {
+  stroke: var(--neon-cyan);
+  stroke-dasharray: 6, 4;
+  animation: flow 1s linear infinite;
+  filter: drop-shadow(0 0 4px var(--neon-cyan));
+  transition: stroke 0.3s ease;
+}
+
+.neon-flow-line-inactive {
+  stroke: var(--line-inactive);
+  stroke-dasharray: 6, 4;
+  transition: stroke 0.3s ease;
+}
+
+/* Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(82, 156, 202, 0.2);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(82, 156, 202, 0.4);
+}
+
+/* Light Mode Accessibility Overrides (WCAG AA Compliant Contrast) */
+.light {
+  color-scheme: light;
+}
+
+.light .text-\[\#529CCA\] {
+  color: #1a56db !important; /* High-contrast deep blue */
+}
+
+.light .bg-\[\#529CCA\] {
+  background-color: #1a56db !important; /* Safe background color for white text */
+}
+
+.light .hover\:bg-\[\#438bb8\]:hover {
+  background-color: #1a44b5 !important;
+}
+
+.light .border-\[\#529CCA\] {
+  border-color: #1a56db !important;
+}
+
+.light .text-zinc-400 {
+  color: #4b5563 !important; /* gray-600, contrast 5.1:1 */
+}
+
+.light .text-zinc-500 {
+  color: #374151 !important; /* gray-700, contrast 6.9:1 */
+}
+
+.light .text-zinc-600 {
+  color: #1f2937 !important; /* gray-800, contrast 9.4:1 */
+}
+
+.light .text-zinc-300 {
+  color: #374151 !important; /* gray-700 */
+}
+
+.light .text-rose-500 {
+  color: #dc2626 !important; /* Darker accessible red */
+}
+
+.light .bg-rose-500\/10 {
+  background-color: rgba(220, 38, 38, 0.1) !important;
+}
+
+.light .border-rose-500\/20 {
+  border-color: rgba(220, 38, 38, 0.2) !important;
+}
+
+.light .text-amber-500,
+.light .text-amber-600 {
+  color: #b45309 !important; /* Accessible dark orange/amber */
+}
+
+.light .bg-amber-500\/10 {
+  background-color: rgba(180, 83, 9, 0.1) !important;
+}
+
+.light .border-amber-500\/20 {
+  border-color: rgba(180, 83, 9, 0.2) !important;
+}
+
+.light .text-emerald-500,
+.light .text-emerald-600 {
+  color: #15803d !important; /* Accessible dark green */
+}
+
+.light .bg-emerald-500\/10 {
+  background-color: rgba(21, 128, 61, 0.1) !important;
+}
+
+.light .border-emerald-500\/20 {
+  border-color: rgba(21, 128, 61, 0.2) !important;
+}
+
+/* Light theme panel override adjustments */
+.light .glass-panel {
+  background: #ffffff; /* Solid white background for maximum contrast */
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+.light .glass-panel-light {
+  background: #f8fafc;
+  border-color: rgba(15, 23, 42, 0.08);
+}
+
+/* Terminal Console dark theme enforcement in light mode */
+.light .terminal-console {
+  background-color: #09090b !important; /* solid deep dark background */
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.light .terminal-console .text-zinc-300 {
+  color: #e4e4e7 !important; /* light text on dark console background */
+}
+
+.light .terminal-console .text-zinc-400 {
+  color: #a1a1aa !important; /* light gray on dark console background */
+}
+
+.light .terminal-console .text-zinc-500 {
+  color: #71717a !important;
+}
+
+.light .terminal-console .text-zinc-600 {
+  color: #52525b !important;
+}
+
+.light .terminal-console .text-\[\#529CCA\] {
+  color: #529CCA !important; /* keep cyan/blue accent glowing inside dark console */
+}
+
+.light .terminal-console .text-\[\#529CCA\]\/90 {
+  color: rgba(82, 156, 202, 0.9) !important;
+}
+
