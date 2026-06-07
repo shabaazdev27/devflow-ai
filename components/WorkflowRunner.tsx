@@ -599,6 +599,23 @@ export default function WorkflowRunner({
                         <div className="text-[11px] text-zinc-600">Scanned: {lastScanReport.total_files_scanned} files</div>
                         <div className="text-[11px] text-zinc-600">Findings: {lastScanReport.findings?.length ?? 0}</div>
                         <div className="text-[11px] text-zinc-600 mt-2">Repo: <span className="font-mono">{lastScanReport.root}</span></div>
+                        <div className="mt-3">
+                          <a href="/api/py/workflows/scan/reports/download" className="inline-block px-3 py-1 rounded-lg bg-[#7c3aed]/10 border border-purple-300 text-purple-600 hover:bg-purple-50 text-xs font-semibold">Download All Reports</a>
+                        </div>
+
+                        {lastScanReport.findings && lastScanReport.findings.length > 0 && (
+                          <div className="mt-3 space-y-2">
+                            <div className="text-[10px] font-bold mb-2">Top Findings</div>
+                            <div className="space-y-2 max-h-44 overflow-y-auto pr-2 custom-scrollbar">
+                              {lastScanReport.findings.slice(0, 50).map((f: any, i: number) => (
+                                <div key={i} className="bg-black/5 dark:bg-black/30 border border-black/10 rounded-lg p-2 text-[11px]">
+                                  <div className="font-mono text-[10px] text-zinc-500">{f.file} {f.line ? `(Line ${f.line})` : ''} — <span className="text-zinc-400">{f.match_type}</span></div>
+                                  <div className="mt-1 text-zinc-600 dark:text-zinc-300 break-words">{f.snippet}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
 
